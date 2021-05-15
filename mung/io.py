@@ -259,19 +259,37 @@ def read_nodes_from_file(filename: str) -> List[Node]:
 
         node_id = int(float(node.findall('Id')[0].text))
         class_name = node.findall('ClassName')[0].text
+        
+        #################################
+        # Parsing the graph structure (Can deal with missing ClassLikelihoods)
+        class_likelihoods = []
+        c_lhs = node.findall('ClassLikelihoods')
+        if len(c_lhs) > 0:
+            c_lhs_text = node.findall('ClassLikelihoods')[0].text
+            if c_lhs_text is not None:
+                class_likelihoods = list(map(float, c_lhs_text.split(' ')))
+            
         top = int(node.findall('Top')[0].text)
         left = int(node.findall('Left')[0].text)
         width = int(node.findall('Width')[0].text)
         height = int(node.findall('Height')[0].text)
 
         #################################
-        # Parsing the graph structure (Can deal with missing Inlinks/Outlinks)
+        # Parsing the graph structure (Can deal with missing Inlinks/Outlinks
+        # or their likelihoods)
         inlinks = []
         i_s = node.findall('Inlinks')
         if len(i_s) > 0:
             i_s_text = node.findall('Inlinks')[0].text
             if i_s_text is not None:  # Zero-length links
                 inlinks = list(map(int, i_s_text.split(' ')))
+                
+        inlinks_likelihoods = []
+        i_lhs = node.findall('InlinksLikelihoods')
+        if len(i_lhs) > 0:
+            i_lhs_text = node.findall('InlinksLikelihoods')[0].text
+            if i_lhs_text is not None:  # Zero-length links
+                inlinks_likelihoods = list(map(float, i_lhs_text.split(' ')))
 
         outlinks = []
         o_s = node.findall('Outlinks')
@@ -279,6 +297,13 @@ def read_nodes_from_file(filename: str) -> List[Node]:
             o_s_text = node.findall('Outlinks')[0].text
             if o_s_text is not None:
                 outlinks = list(map(int, o_s_text.split(' ')))
+                
+        outlinks_likelihoods = []
+        o_lhs = node.findall('OutlinksLikelihoods')
+        if len(o_lhs) > 0:
+            o_lhs_text = node.findall('OutlinksLikelihoods')[0].text
+            if o_lhs_text is not None:  # Zero-length links
+                inlinks_likelihoods = list(map(float, o_lhs_text.split(' ')))
 
         #################################
         data = node.findall('Data')

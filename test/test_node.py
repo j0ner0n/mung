@@ -57,13 +57,13 @@ class NodeTest(unittest.TestCase):
         self.assertEqual([8, 17], nodes[0].data['precedence_outlinks'])
         
     def test_join_likelihoods(self):
-        """Ensure that inlinks and their likelihoods are accurately stored when nodes are joined
+        """Ensure that links and classes with their likelihoods are accurately stored when nodes are joined
         """
-        node1 = Node(0, 'test1', 10, 10, 20, 20, [], [2], [0.85], [3], [0.7], np.zeros((20, 20)))
-        node2 = Node(1, 'test2', 15, 15, 30, 30, [], [4], [0.5], [5], [0.5], np.zeros((30, 30)))
+        node1 = Node(0, 'test1', 10, 10, 20, 20, [0.9, 0.05, 0, 0, 0, 0, 0.04], [2], [0.85], [3], [0.7], np.zeros((20, 20)))
+        node2 = Node(1, 'test2', 15, 15, 30, 30, [0.1, 0.7, 0.1, 0.05, 0.05, 0, 0], [4], [0.5], [5], [0.5], np.zeros((30, 30)))
         node1.join(node2)
-        
-        node_accurate_join = Node(0, 'test1', 10, 10, 35, 35, [], [2, 4], [0.85, 0.5], [3, 5], [0.7, 0.5], np.zeros((35,35)))
+        node_accurate_join = Node(0, 'test1', 10, 10, 35, 35, [0.9, 0.05, 0, 0, 0, 0, 0.04], [2, 4], [0.85, 0.5], [3, 5], [0.7, 0.5], np.zeros((35,35)))
+        self.assertEqual(node1.class_likelihoods, node_accurate_join.class_likelihoods)
         self.assertEqual(node1.inlinks, node_accurate_join.inlinks)
         self.assertEqual(node1.inlinks_likelihoods, node_accurate_join.inlinks_likelihoods)
         self.assertEqual(node1.outlinks, node_accurate_join.outlinks)

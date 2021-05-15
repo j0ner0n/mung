@@ -641,7 +641,12 @@ class Node(object):
         lines = []
         lines.append('<Node>')
         lines.append('\t<Id>{0}</Id>'.format(self.id))
-        lines.append('\t<ClassName>{0}</ClassName>'.format(self.class_name)) # TODO change this if relevant for final XML notation 
+        lines.append('\t<ClassName>{0}</ClassName>'.format(self.class_name)) # TODO change this if relevant for final XML notation
+        
+        if len(self.class_likelihoods) > 0:
+            class_likelihoods_string = ' '.join(list(map(str, self.class_likelihoods)))
+            lines.append('\t<ClassLikelihoods>{0}</ClassLikelihoods>'.format(class_likelihoods_string))
+            
         lines.append('\t<Top>{0}</Top>'.format(self.top))
         lines.append('\t<Left>{0}</Left>'.format(self.left))
         lines.append('\t<Width>{0}</Width>'.format(self.__width))
@@ -653,12 +658,15 @@ class Node(object):
         if len(self.inlinks) > 0:
             inlinks_string = ' '.join(list(map(str, self.inlinks)))
             lines.append('\t<Inlinks>{0}</Inlinks>'.format(inlinks_string))
+            
         if len(self.inlinks_likelihoods) > 0:
             inlinks_likelihoods_string = ' '.join(list(map(str, self.inlinks_likelihoods)))
             lines.append('\t<InlinksLikelihoods>{0}</InlinksLikelihoods>'.format(inlinks_likelihoods_string))
+            
         if len(self.outlinks) > 0:
             outlinks_string = ' '.join(list(map(str, self.outlinks)))
             lines.append('\t<Outlinks>{0}</Outlinks>'.format(outlinks_string))
+            
         if len(self.outlinks_likelihoods) > 0:
             outlinks_likelihoods_string = ' '.join(list(map(str, self.outlinks_likelihoods)))
             lines.append('\t<OutlinksLikelihoods>{0}</OutlinksLikelihoods>'.format(outlinks_likelihoods_string))

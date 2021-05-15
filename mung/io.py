@@ -340,12 +340,15 @@ def read_nodes_from_file(filename: str) -> List[Node]:
         # Create the object.
         new_node = Node(id_=node_id,
                         class_name=class_name,
+                        class_likelihoods=class_likelihoods,
                         top=top,
                         left=left,
                         width=width,
                         height=height,
                         inlinks=inlinks,
+                        inlinks_likelihoods=inlinks_likelihoods,
                         outlinks=outlinks,
+                        outlinks_likelihoods=outlinks_likelihoods,
                         dataset=dataset,
                         document=document,
                         data=data_dict)

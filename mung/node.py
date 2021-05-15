@@ -218,11 +218,11 @@ class Node(object):
 
     def __init__(self, id_: int,
                  class_name: str,
-                 class_likelihoods: List[int] = [],
                  top: int,
                  left: int,
                  width: int,
                  height: int,
+                 class_likelihoods: List[float] = [],
                  outlinks: List[int] = [],
                  outlinks_likelihoods: List[float] = [],
                  inlinks: List[int] = [],
@@ -244,9 +244,11 @@ class Node(object):
         self.__mask = None
         self.set_mask(mask)
         
-        self.__inlinks = zip(inlinks, inlinks_likelihoods)  # type: List[(int,float)]
-        self.__outlinks = zip(outlinks, outlinks_likelihoods)  # type: List[(int,float)]
-        self.__class_likelihoods = class_likelihoods
+        self.inlinks = inlinks
+        self.inlinks_likelihoods = inlinks_likelihoods
+        self.outlinks = outlinks
+        self.outlinks_likelihoods = outlinks_likelihoods
+        self.class_likelihoods = class_likelihoods
 
         if dataset is None:
             dataset = self.DEFAULT_DATASET
@@ -306,9 +308,6 @@ class Node(object):
     @property
     def class_name(self) -> str:
         return self.__class_name
-    
-    def set_class_name(self, class_name_):
-        self.__class_name = class_name_
 
     @property
     def dataset(self) -> str:
@@ -654,9 +653,15 @@ class Node(object):
         if len(self.inlinks) > 0:
             inlinks_string = ' '.join(list(map(str, self.inlinks)))
             lines.append('\t<Inlinks>{0}</Inlinks>'.format(inlinks_string))
+        if len(self.inlinks_likelihoods) > 0:
+            inlinks_likelihoods_string = ' '.join(list(map(str, self.inlinks_likelihoods)))
+            lines.append('\t<InlinksLikelihoods>{0}</InlinksLikelihoods>'.format(inlinks_likelihoods_string))
         if len(self.outlinks) > 0:
             outlinks_string = ' '.join(list(map(str, self.outlinks)))
             lines.append('\t<Outlinks>{0}</Outlinks>'.format(outlinks_string))
+        if len(self.outlinks_likelihoods) > 0:
+            outlinks_likelihoods_string = ' '.join(list(map(str, self.outlinks_likelihoods)))
+            lines.append('\t<OutlinksLikelihoods>{0}</OutlinksLikelihoods>'.format(outlinks_likelihoods_string))
 
         data_string = self.encode_data()
         if data_string is not None:
@@ -867,12 +872,17 @@ class Node(object):
         self.__mask = new_mask
 
         # Add inlinks and outlinks (check for multiple and self-reference)
-        for o in other.outlinks:
+        # Copy likelihood values over if existing
+        for idx, o in enumerate(other.outlinks):
             if (o not in self.outlinks) and (o != self.id):
                 self.outlinks.append(o)
-        for i in other.inlinks:
+                if (other.outlinks_likelihoods != []):
+                    self.outlinks_likelihoods.append(other.outlinks_likelihoods[idx])
+        for idx, i in enumerate(other.inlinks):
             if (i not in self.inlinks) and (i != self.id):
                 self.inlinks.append(i)
+                if (other.inlinks_likelihoods != []):
+                    self.inlinks_likelihoods.append(other.inlinks_likelihoods[idx])
 
     def get_outlink_objects(self, nodes):
         # type: (List[Node]) -> List[Node]
@@ -1054,14 +1064,17 @@ def split_node_by_its_connected_components(node: Node, next_node_id: int) -> Lis
         left = left + node.left - 1
         node_id = next_node_id
         inlinks = copy.deepcopy(node.inlinks)
+        inlinks_likelihoods = copy.deepcopy(node.inlinks_likelihoods)
         outlinks = copy.deepcopy(node.outlinks)
+        outlinks_likelihoods = copy.deepcopy(node.outlinks_likelihoods)
         data = copy.deepcopy(node.data)
         dataset = node.dataset
         document = node.document
 
         new_node = Node(node_id, node.class_name, top, left, width, height,
-                        inlinks=inlinks, outlinks=outlinks,
-                        mask=m, data=data, dataset=dataset, document=document)
+                        inlinks=inlinks, inlinks_likelihoods=inlinks_likelihoods, outlinks=outlinks,
+                        outlinks_likelihoods=outlinks_likelihoods, mask=m, data=data, 
+                        dataset=dataset,document=document)
         output.append(new_node)
 
         next_node_id += 1
@@ -1177,6 +1190,10 @@ def merge_inlinks_and_outlinks_to_nodes_outside_of_this_list(nodes: List[Node]) 
     to Nodes outside of this set. The rationale for this is that
     these given ``nodes`` will be merged into one, so relationships
     within the set would become loops and disappear.
+    
+    Discards any stored likelihoods, as there is no reason for them to be 
+    present at this point and modification of likelihoods is too complex
+    to infer without complex analysis.
 
     (Note that this is not sufficient to update the relationships upon
     a merge, because the affected Nodess *outside* the given set

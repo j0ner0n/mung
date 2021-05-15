@@ -1,5 +1,6 @@
 import os
 import unittest
+import numpy as np
 
 from mung.io import read_nodes_from_file, export_node_list
 from mung.node import Node
@@ -54,6 +55,20 @@ class NodeTest(unittest.TestCase):
         self.assertEqual("G", nodes[0].data['pitch_step'])
         self.assertEqual(79, nodes[0].data['midi_pitch_code'])
         self.assertEqual([8, 17], nodes[0].data['precedence_outlinks'])
+        
+    def test_join_likelihoods(self):
+        """Ensure that inlinks and their likelihoods are accurately stored when nodes are joined
+        """
+        node1 = Node(0, 'test1', 10, 10, 20, 20, [], [2], [0.85], [3], [0.7], np.zeros((20, 20)))
+        node2 = Node(1, 'test2', 15, 15, 30, 30, [], [4], [0.5], [5], [0.5], np.zeros((30, 30)))
+        node1.join(node2)
+        
+        node_accurate_join = Node(0, 'test1', 10, 10, 35, 35, [], [2, 4], [0.85, 0.5], [3, 5], [0.7, 0.5], np.zeros((35,35)))
+        self.assertEqual(node1.inlinks, node_accurate_join.inlinks)
+        self.assertEqual(node1.inlinks_likelihoods, node_accurate_join.inlinks_likelihoods)
+        self.assertEqual(node1.outlinks, node_accurate_join.outlinks)
+        self.assertEqual(node1.outlinks_likelihoods, node_accurate_join.outlinks_likelihoods)
+        
 
 
 if __name__ == '__main__':

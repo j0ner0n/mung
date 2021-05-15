@@ -218,16 +218,19 @@ class Node(object):
 
     def __init__(self, id_: int,
                  class_name: str,
+                 class_likelihoods: List[int] = [],
                  top: int,
                  left: int,
                  width: int,
                  height: int,
-                 outlinks: List[int] = None,
-                 inlinks: List[int] = None,
+                 outlinks: List[int] = [],
+                 outlinks_likelihoods: List[float] = [],
+                 inlinks: List[int] = [],
+                 inlinks_likelihoods: List[float] = [],
                  mask: numpy.ndarray = None,
                  dataset: str = None,
                  document: str = None,
-                 data=None):
+                 data=dict()):
         self.__id = id_
         self.__class_name = class_name
         self.__top = top
@@ -240,14 +243,10 @@ class Node(object):
         self.__to_integer_bounds()
         self.__mask = None
         self.set_mask(mask)
-
-        if inlinks is None:
-            inlinks = []
-        self.inlinks = inlinks  # type: List[int]
-
-        if outlinks is None:
-            outlinks = []
-        self.outlinks = outlinks  # type: List[int]
+        
+        self.__inlinks = zip(inlinks, inlinks_likelihoods)  # type: List[(int,float)]
+        self.__outlinks = zip(outlinks, outlinks_likelihoods)  # type: List[(int,float)]
+        self.__class_likelihoods = class_likelihoods
 
         if dataset is None:
             dataset = self.DEFAULT_DATASET
@@ -258,9 +257,6 @@ class Node(object):
         self.__document = document
 
         self.is_selected = False
-
-        if data is None:
-            data = dict()
         self.data = data
 
     @property

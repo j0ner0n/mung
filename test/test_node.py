@@ -69,6 +69,27 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(node1.outlinks, node_accurate_join.outlinks)
         self.assertEqual(node1.outlinks_likelihoods, node_accurate_join.outlinks_likelihoods)
         
+    def test_xml_export(self):
+        """Ensure that XML export of node works as expected with 3-digit floating point rounding performed for probability values
+        """
+        node = Node(0, 'test1', 10, 10, 20, 20, [1/7, 4/7, 1/7, 0, 0, 0, 1/7], [2], [0.85], [3], [0.7], np.zeros((20, 20)))
+        expected = \
+            """<Node>
+	<Id>0</Id>
+	<ClassName>test1</ClassName>
+	<ClassLikelihoods>0.143 0.571 0.143 0.000 0.000 0.000 0.143</ClassLikelihoods>
+	<Top>10</Top>
+	<Left>10</Left>
+	<Width>20</Width>
+	<Height>20</Height>
+	<Mask>0:400</Mask>
+	<Inlinks>3</Inlinks>
+	<InlinksLikelihoods>0.700</InlinksLikelihoods>
+	<Outlinks>2</Outlinks>
+	<OutlinksLikelihoods>0.850</OutlinksLikelihoods>
+</Node>"""
+        self.assertEqual(str(node), expected)
+        
 
 
 if __name__ == '__main__':
